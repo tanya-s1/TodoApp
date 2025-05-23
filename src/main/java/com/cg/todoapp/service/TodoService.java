@@ -1,15 +1,15 @@
 package com.cg.todoapp.service;
 
-import com.cg.todoapp.entity.Priority;
-import com.cg.todoapp.entity.Todo;
-import com.cg.todoapp.entity.User;
-import com.cg.todoapp.repository.TodoRepository;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.cg.todoapp.entity.Priority;
+import com.cg.todoapp.entity.Todo;
+import com.cg.todoapp.entity.User;
+import com.cg.todoapp.repository.TodoRepository;
 
 public class TodoService {
     private final TodoRepository todoRepository;
@@ -18,9 +18,9 @@ public class TodoService {
         this.todoRepository = todoRepository;
     }
 
-    public void addTodo(User user, String title, String desc, Priority priority, LocalDate dueDate) {
+    public void addTodo(User user, String title, String desc, Priority priority, LocalDateTime dueDateTime) {
         long id = todoRepository.getNextTodoId(user);
-        Todo todo = new Todo(id, title, desc, priority, dueDate);
+        Todo todo = new Todo(id, title, desc, priority, dueDateTime);
         todoRepository.addTodo(user, todo);
     }
 
@@ -67,12 +67,13 @@ public class TodoService {
                 .collect(Collectors.toList());
     }
 
-    public List<Todo> filterByDueDate(User user, LocalDate from, LocalDate to) {
-        return todoRepository.getTodos(user).stream()
-                .filter(todo -> (todo.getDueDate().isEqual(from) || todo.getDueDate().isAfter(from)) &&
-                                (todo.getDueDate().isEqual(to) || todo.getDueDate().isBefore(to)))
-                .collect(Collectors.toList());
-    }
+    public List<Todo> filterByDueDate(User user, LocalDateTime from, LocalDateTime to) {
+    return todoRepository.getTodos(user).stream()
+            .filter(todo -> (todo.getDueDateTime().isEqual(from) || todo.getDueDateTime().isAfter(from)) &&
+                            (todo.getDueDateTime().isEqual(to) || todo.getDueDateTime().isBefore(to)))
+            .collect(Collectors.toList());
+}
+
 
     public List<Todo> sortTodos(User user, String sortBy) {
         Comparator<Todo> comparator;
@@ -82,7 +83,7 @@ public class TodoService {
                 comparator = Comparator.comparing(Todo::getPriority);
                 break;
             case "duedate":
-                comparator = Comparator.comparing(Todo::getDueDate);
+                comparator = Comparator.comparing(Todo::getDueDateTime);
                 break;
             case "createdat":
             default:

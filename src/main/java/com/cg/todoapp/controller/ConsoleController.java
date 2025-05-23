@@ -1,6 +1,6 @@
 package com.cg.todoapp.controller;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 
@@ -119,15 +119,23 @@ public class ConsoleController {
             return;
         }
 
-        System.out.print("Due Date (yyyy-MM-dd): ");
+        // System.out.print("Due Date (yyyy-MM-dd): ");
+        // String dateStr = scanner.nextLine();
+        // if (!Validator.isValidDateTime(dateStr)) {
+        //     System.out.println("Invalid date format.");
+        //     return;
+        // }
+        System.out.print("Due Date & Time (yyyy-MM-dd HH:mm): ");
         String dateStr = scanner.nextLine();
-        if (!Validator.isValidDate(dateStr)) {
-            System.out.println("Invalid date format.");
+        if (!Validator.isValidDateTime(dateStr)) {
+            System.out.println("Invalid date-time format.");
             return;
         }
+        LocalDateTime dueDateTime = Validator.parseDateTime(dateStr);
+        
 
         Priority priority = Validator.parsePriority(priorityStr);
-        LocalDate dueDate = Validator.parseDate(dateStr);
+        LocalDateTime dueDate = Validator.parseDateTime(dateStr);
         todoService.addTodo(userService.getCurrentUser(), title, desc, priority, dueDate);
         System.out.println("Todo added!");
     }
@@ -142,6 +150,8 @@ public class ConsoleController {
     }
 
     private void markComplete() {
+        viewTodos();
+        System.out.println();
         System.out.print("Enter Todo ID: ");
         long id = Long.parseLong(scanner.nextLine());
         System.out.print("Completed? (true/false): ");
@@ -154,6 +164,7 @@ public class ConsoleController {
     }
 
     private void deleteTodo() {
+        viewTodos();
         System.out.print("Enter Todo ID to delete: ");
         long id = Long.parseLong(scanner.nextLine());
         if (todoService.deleteTodo(userService.getCurrentUser(), id)) {
@@ -165,6 +176,7 @@ public class ConsoleController {
 
     private void searchTodos() {
         System.out.print("Enter keyword to search: ");
+        System.out.println();
         String keyword = scanner.nextLine();
         List<Todo> results = todoService.searchTodos(userService.getCurrentUser(), keyword);
         if (results.isEmpty()) {
@@ -175,50 +187,77 @@ public class ConsoleController {
     }
 
     private void filterTodos() {
-        System.out.println("1. By Completion");
-        System.out.println("2. By Priority");
-        System.out.println("3. By Due Date Range");
-        String choice = scanner.nextLine();
-        switch (choice) {
-            case "1":
-                System.out.print("Completed? (true/false): ");
-                boolean comp = Boolean.parseBoolean(scanner.nextLine());
-                todoService.filterByCompletion(userService.getCurrentUser(), comp)
+    System.out.println("1. By Completion");
+    System.out.println("2. By Priority");
+    System.out.println("3. By Due Date-Time Range");
+    System.out.print("Choose filter option: ");
+    String choice = scanner.nextLine().trim();
+
+    switch (choice) {
+        case "1":
+            System.out.print("Completed? (true/false): ");
+            String boolInput = scanner.nextLine().trim().toLowerCase();
+            if (boolInput.equals("true") || boolInput.equals("false")) {
+                boolean completed = Boolean.parseBoolean(boolInput);
+                todoService.filterByCompletion(userService.getCurrentUser(), completed)
                            .forEach(this::printTodo);
-                break;
-            case "2":
-                System.out.print("Priority (LOW/MEDIUM/HIGH): ");
-                String pStr = scanner.nextLine();
-                if (Validator.isValidPriority(pStr)) {
-                    todoService.filterByPriority(userService.getCurrentUser(),
-                            Validator.parsePriority(pStr)).forEach(this::printTodo);
-                } else {
-                    System.out.println("Invalid priority.");
-                }
-                break;
-            case "3":
-                System.out.print("From Date (yyyy-MM-dd): ");
-                LocalDate from = Validator.parseDate(scanner.nextLine());
-                System.out.print("To Date (yyyy-MM-dd): ");
-                LocalDate to = Validator.parseDate(scanner.nextLine());
-                todoService.filterByDueDate(userService.getCurrentUser(), from, to)
-                           .forEach(this::printTodo);
-                break;
-            default:
-                System.out.println("Invalid filter option.");
-        }
+            } else {
+                System.out.println("Invalid input. Please enter true or false.");
+            }
+            break;
+
+        case "2":
+            System.out.print("Priority (LOW/MEDIUM/HIGH): ");
+            String pStr = scanner.nextLine().trim().toUpperCase();
+            if (Validator.isValidPriority(pStr)) {
+                todoService.filterByPriority(
+                        userService.getCurrentUser(),
+                        Validator.parsePriority(pStr)
+                ).forEach(this::printTodo);
+            } else {
+                System.out.println("Invalid priority. Please enter LOW, MEDIUM, or HIGH.");
+            }
+            break;
+
+        case "3":
+            System.out.print("From Date & Time (yyyy-MM-dd HH:mm): ");
+            String fromStr = scanner.nextLine();
+            if (!Validator.isValidDateTime(fromStr)) {
+                System.out.println("Invalid format.");
+                return;
+            }
+            LocalDateTime from = Validator.parseDateTime(fromStr);
+
+            System.out.print("To Date & Time (yyyy-MM-dd HH:mm): ");
+            String toStr = scanner.nextLine();
+            if (!Validator.isValidDateTime(toStr)) {
+                System.out.println("Invalid format.");
+                return;
+            }
+            LocalDateTime to = Validator.parseDateTime(toStr);
+
+            todoService.filterByDueDate(userService.getCurrentUser(), from, to)
+                    .forEach(this::printTodo);
+            break;
+
+        default:
+            System.out.println("Invalid filter option. Please choose 1, 2, or 3.");
     }
+}
+
 
     private void sortTodos() {
         System.out.println("Sort by: createdAt / priority / dueDate");
         String field = scanner.nextLine();
-        todoService.sortTodos(userService.getCurrentUser(), field)
-                   .forEach(this::printTodo);
+        todoService.sortTodos(userService.getCurrentUser(), field).forEach(this::printTodo);
     }
 
     private void printTodo(Todo todo) {
-        System.out.printf("ID: %d | %s | %s | Priority: %s | Due: %s | Done: %s%n",
-                todo.getId(), todo.getTitle(), todo.getDescription(),
-                todo.getPriority(), todo.getDueDate(), todo.isCompleted());
-    }
+    String due = todo.getDueDateTime().format(Validator.getFormatter());
+    String created = todo.getCreatedAt().format(Validator.getFormatter());
+
+    System.out.printf("ID: %d | %s | %s | Priority: %s | Due: %s | Created: %s | Done: %s%n",
+            todo.getId(), todo.getTitle(), todo.getDescription(),
+            todo.getPriority(), due, created, todo.isCompleted());
+}
 }
