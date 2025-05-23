@@ -22,7 +22,6 @@ public class TodoService {
         long id = todoRepository.getNextTodoId(user);
         Todo todo = new Todo(id, title, desc, priority, dueDate);
         todoRepository.addTodo(user, todo);
-        
     }
 
     public List<Todo> getTodos(User user) {
