@@ -141,7 +141,7 @@ public class ConsoleController {
     }
 
     private void viewTodos() {
-        List<Todo> todos = todoService.getTodos(userService.getCurrentUser());
+        List<Todo> todos = todoService.getAll(userService.getCurrentUser());
         if (todos.isEmpty()) {
             System.out.println("No todos found.");
         } else {
