@@ -1,30 +1,31 @@
 package com.cg.todoapp.service;
 
-import com.cg.todoapp.entity.User;
-import com.cg.todoapp.repository.UserRepository;
-
 import java.util.Optional;
 
+import com.cg.todoapp.dao.UserDao;
+import com.cg.todoapp.entity.User;
+
 public class UserService {
-    private final UserRepository userRepository;
+    // private final userRepository userRepository;
+    private final UserDao userDao;
     private User currentUser;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserService(UserDao userDao) {
+        this.userDao = userDao;
     }
 
     public boolean register(String username, String password) {
-        if (userRepository.existsByUsername(username)) {
+        if (userDao.exists(username)) {
             return false; // Username already taken
         }
         User newUser = new User(username, password);
-        userRepository.save(newUser);
+        userDao.save(newUser);
         return true;
     }
 
     public boolean login(String username, String password) {
-        if (userRepository.authenticate(username, password)) {
-            Optional<User> user = userRepository.findByUsername(username);
+        if (userDao.authenticate(username, password)) {
+            Optional<User> user = userDao.findByUsername(username);
             user.ifPresent(value -> currentUser = value);
             return true;
         }
