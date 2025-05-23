@@ -1,12 +1,14 @@
 package com.cg.todoapp.util;
 
-import com.cg.todoapp.entity.Priority;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import com.cg.todoapp.entity.Priority;
+
 public class Validator {
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public static boolean isValidTitle(String title) {
         return title != null && !title.trim().isEmpty();
@@ -21,20 +23,24 @@ public class Validator {
         }
     }
 
-    public static boolean isValidDate(String dateStr) {
+    public static boolean isValidDateTime(String input) {
         try {
-            parseDate(dateStr);
+            parseDateTime(input);
             return true;
-        } catch (Exception e) {
+        } catch (DateTimeParseException e) {
             return false;
         }
     }
 
-    public static LocalDate parseDate(String dateStr) {
-        return LocalDate.parse(dateStr.trim(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    public static LocalDateTime parseDateTime(String input) {
+        return LocalDateTime.parse(input.trim(), DATE_TIME_FORMATTER);
     }
 
     public static Priority parsePriority(String input) {
         return Priority.valueOf(input.trim().toUpperCase());
+    }
+
+    public static DateTimeFormatter getFormatter() {
+        return DATE_TIME_FORMATTER;
     }
 }

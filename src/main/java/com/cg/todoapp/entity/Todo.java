@@ -1,24 +1,25 @@
 package com.cg.todoapp.entity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 
 public class Todo {
     private long id;
     private String title;
     private String description;
     private Priority priority;
-    private LocalDate dueDate;
+    private LocalDateTime dueDateTime;
     private boolean completed;
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
-    public Todo(long id, String title, String description, Priority priority, LocalDate dueDate) {
+    public Todo(long id, String title, String description, Priority priority, LocalDateTime dueDateTime) {
         setId(id);
         setTitle(title);
         setDescription(description);
         setPriority(priority);
-        setDueDate(dueDate);
+        setDueDateTime(dueDateTime);
         setCompleted(false);
-        setCreatedAt(LocalDate.now());
+        setCreatedAt(LocalDateTime.now());
     }
 
     public long getId() { return id; }
@@ -33,12 +34,12 @@ public class Todo {
     public Priority getPriority() { return priority; }
     public void setPriority(Priority priority) { this.priority = priority; }
 
-    public LocalDate getDueDate() { return dueDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+    public LocalDateTime getDueDateTime() { return dueDateTime; }
+    public void setDueDateTime(LocalDateTime dueDateTime) { this.dueDateTime = dueDateTime; }
 
     public boolean isCompleted() { return completed; }
     public void setCompleted(boolean completed) { this.completed = completed; }
 
-    public LocalDate getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
