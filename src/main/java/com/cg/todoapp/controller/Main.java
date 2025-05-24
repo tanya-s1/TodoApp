@@ -17,8 +17,9 @@ public class Main {
         // UserDao userDao = new UserDaoImpl(userRepo);
         // TodoDao todoDao = new TodoDaoImpl(todoRepo);
         
-        UserDao userDao = new UserDaoImpl();
-        TodoDao todoDao = new TodoDaoImpl();
+        UserDao userDao = new UserDaoImpl("users.json");
+        TodoDao todoDao = new TodoDaoImpl("user_todos.json");
+
 
 
         // Create service layer with DAOs

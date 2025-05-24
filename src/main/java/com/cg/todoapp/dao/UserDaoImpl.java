@@ -17,8 +17,14 @@ import com.google.gson.reflect.TypeToken;
 
 public class UserDaoImpl implements UserDao {
 
-    private static final String FILE_NAME = "users.json";
+    // private static final String FILE_NAME = "users.json";
     private final Gson gson = new Gson();
+
+    private String FILE_NAME;
+
+    public UserDaoImpl(String FILE_NAME) {
+        this.FILE_NAME = FILE_NAME;
+    }
 
     private List<User> loadUsers() {
         File file = new File(FILE_NAME);
