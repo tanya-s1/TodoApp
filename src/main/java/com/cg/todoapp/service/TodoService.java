@@ -11,16 +11,33 @@ import com.cg.todoapp.entity.Priority;
 import com.cg.todoapp.entity.Todo;
 import com.cg.todoapp.entity.User;
 
+/**
+ * Service class that provides business logic for managing Todo items for users.
+ * It acts as a bridge between the DAO layer and the application logic,
+ * handling operations like add, update, delete, search, filter, and sort.
+ */
 public class TodoService {
-    // DAO layer for managing todo data
+    // DAO layer instance to manage persistence of Todo data
     private final TodoDao todoDao;
 
+    /**
+     * Constructor to initialize the service with a TodoDao implementation.
+     *
+     * @param todoDao DAO object to perform CRUD operations on Todo data.
+     */
     public TodoService(TodoDao todoDao) {
         this.todoDao = todoDao;
     }
 
     /**
-     * Adds a new todo item for the specified user.
+     * Adds a new Todo item for a specified user.
+     * Generates a unique ID using the DAO and then saves the Todo.
+     *
+     * @param user The user to whom the Todo belongs
+     * @param title Title of the Todo task
+     * @param desc Description of the task
+     * @param priority Priority level of the task
+     * @param dueDateTime Deadline for the task
      */
     public void addTodo(User user, String title, String desc, Priority priority, LocalDateTime dueDateTime) {
         long id = todoDao.getNextId(user);
@@ -29,14 +46,23 @@ public class TodoService {
     }
 
     /**
-     * Retrieves all todos for the given user.
+     * Retrieves all Todo items associated with the specified user.
+     *
+     * @param user The user whose Todos are to be fetched
+     * @return List of all Todo items for the user
      */
     public List<Todo> getAll(User user) {
         return todoDao.getAll(user);
     }
 
     /**
-     * Marks the specified todo as completed or not completed.
+     * Marks a specific Todo as completed or not completed.
+     * Updates the Todo if found and returns success status.
+     *
+     * @param user The user owning the Todo
+     * @param id The unique ID of the Todo item
+     * @param completed The completion status to set
+     * @return true if Todo was found and updated; false otherwise
      */
     public boolean markCompleted(User user, long id, boolean completed) {
         Optional<Todo> todoOpt = todoDao.findById(user, id);
@@ -50,7 +76,11 @@ public class TodoService {
     }
 
     /**
-     * Deletes a todo with the specified ID for the user.
+     * Deletes the Todo with the specified ID for the given user.
+     *
+     * @param user The user owning the Todo
+     * @param id The ID of the Todo to delete
+     * @return true if Todo was found and deleted; false otherwise
      */
     public boolean deleteTodo(User user, long id) {
         Optional<Todo> todoOpt = todoDao.findById(user, id);
@@ -62,7 +92,12 @@ public class TodoService {
     }
 
     /**
-     * Searches the user's todos for a keyword in the title or description.
+     * Searches the user's Todos for a keyword present in the title or description.
+     * The search is case-insensitive.
+     *
+     * @param user The user whose Todos to search
+     * @param keyword The keyword to look for in title or description
+     * @return List of Todos matching the keyword search
      */
     public List<Todo> searchTodos(User user, String keyword) {
         return todoDao.getAll(user).stream()
@@ -72,7 +107,11 @@ public class TodoService {
     }
 
     /**
-     * Filters the user's todos based on completion status.
+     * Filters the user's Todos based on whether they are completed or not.
+     *
+     * @param user The user whose Todos to filter
+     * @param completed The completion status to filter by
+     * @return List of Todos filtered by completion status
      */
     public List<Todo> filterByCompletion(User user, boolean completed) {
         return todoDao.getAll(user).stream()
@@ -81,7 +120,11 @@ public class TodoService {
     }
 
     /**
-     * Filters the user's todos by a given priority.
+     * Filters the user's Todos by the specified priority level.
+     *
+     * @param user The user whose Todos to filter
+     * @param priority The priority to filter by
+     * @return List of Todos matching the specified priority
      */
     public List<Todo> filterByPriority(User user, Priority priority) {
         return todoDao.getAll(user).stream()
@@ -90,7 +133,12 @@ public class TodoService {
     }
 
     /**
-     * Filters todos based on a due date range.
+     * Filters the user's Todos that have due dates within the specified date-time range (inclusive).
+     *
+     * @param user The user whose Todos to filter
+     * @param from Start of the date-time range
+     * @param to End of the date-time range
+     * @return List of Todos with due dates in the given range
      */
     public List<Todo> filterByDueDate(User user, LocalDateTime from, LocalDateTime to) {
         return todoDao.getAll(user).stream()
@@ -100,7 +148,12 @@ public class TodoService {
     }
 
     /**
-     * Sorts the user's todos by a given field: priority, duedate, or createdat.
+     * Sorts the user's Todos by the specified field.
+     * Supports sorting by priority, due date, or creation date.
+     *
+     * @param user The user whose Todos to sort
+     * @param sortBy Field name to sort by ("priority", "duedate", or "createdat")
+     * @return Sorted list of Todos based on the given field
      */
     public List<Todo> sortTodos(User user, String sortBy) {
         Comparator<Todo> comparator;

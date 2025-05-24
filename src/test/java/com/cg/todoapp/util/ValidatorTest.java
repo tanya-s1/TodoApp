@@ -13,6 +13,11 @@ import com.cg.todoapp.entity.Priority;
 
 public class ValidatorTest {
 
+    /**
+     * Test to verify the validation of task titles.
+     * Checks that a non-empty title returns true.
+     * Checks that an empty string returns false.
+     */
     @Test
     public void testValidTitle() {
         assertTrue(Validator.isValidTitle("Buy Milk"));
@@ -21,6 +26,11 @@ public class ValidatorTest {
         assertFalse(Validator.isValidTitle(null));
     }
 
+    /**
+     * Test priority string validation and parsing.
+     * Verifies that valid priority strings (case insensitive) are recognized.
+     * Checks that parsing returns the correct Priority enum value.
+     */
     @Test
     public void testIsValidPriority() {
         assertTrue(Validator.isValidPriority("LOW"));
@@ -29,6 +39,11 @@ public class ValidatorTest {
         assertFalse(Validator.isValidPriority("urgent"));
     }
 
+    /**
+     * Test date-time string validation and parsing.
+     * Validates the format of the date-time string.
+     * Parses the string into a LocalDateTime object and verifies the year component.
+     */
     @Test
     public void testParsePriority() {
         assertEquals(Priority.HIGH, Validator.parsePriority("high"));
