@@ -15,14 +15,21 @@ public class ConsoleController {
     private final TodoService todoService;
     private final Scanner scanner;
 
-    // Constructor to initialize services and input scanner
+    /**
+     * Constructor to initialize UserService, TodoService, and Scanner.
+     * @param userService service to handle user-related operations
+     * @param todoService service to handle todo-related operations
+     */
     public ConsoleController(UserService userService, TodoService todoService) {
         this.userService = userService;
         this.todoService = todoService;
         this.scanner = new Scanner(System.in);
     }
 
-    // Entry point to run the Todo application
+    /**
+     * Main application loop presenting login/register/exit options.
+     * Runs until user chooses to exit.
+     */
     public void startApp() {
         while (true) {
             System.out.println("\n===== TODO APP =====");
@@ -34,21 +41,24 @@ public class ConsoleController {
             String choice = scanner.nextLine();
             switch (choice) {
                 case "1":
-                    register(); // User registration
+                    register(); // User registration flow
                     break;
                 case "2":
-                    login(); // User login
+                    login(); // User login flow
                     break;
                 case "3":
                     System.out.println("Exiting app. Goodbye!");
-                    return;
+                    return; // Exit application
                 default:
                     System.out.println("Invalid option. Try again.");
             }
         }
     }
 
-    // Handles user registration
+    /**
+     * Handles user registration input and calls UserService.
+     * Prints success or failure message.
+     */
     private void register() {
         System.out.print("Enter username: ");
         String username = scanner.nextLine();
@@ -62,7 +72,10 @@ public class ConsoleController {
         }
     }
 
-    // Handles user login
+    /**
+     * Handles user login input and calls UserService.
+     * On successful login, transfers control to user menu.
+     */
     private void login() {
         System.out.print("Username: ");
         String username = scanner.nextLine();
@@ -71,13 +84,17 @@ public class ConsoleController {
 
         if (userService.login(username, password)) {
             System.out.println("Login successful. Welcome " + username + "!");
-            userMenu(); // Redirect to user menu on successful login
+            userMenu(); // Show user-specific todo menu
         } else {
             System.out.println("Invalid credentials.");
         }
     }
 
-    // Menu for logged-in users to manage todos
+    /**
+     * Displays menu for logged-in users to manage todos.
+     * Allows adding, viewing, marking complete, deleting, searching,
+     * filtering, sorting todos or logging out.
+     */
     private void userMenu() {
         while (userService.isLoggedIn()) {
             System.out.println("\n===== TODO MENU =====");
@@ -101,7 +118,7 @@ public class ConsoleController {
                 case "6": filterTodos(); break;
                 case "7": sortTodos(); break;
                 case "8":
-                    userService.logout(); // Logs out user
+                    userService.logout(); // Logs out the current user
                     System.out.println("Logged out.");
                     break;
                 default: System.out.println("Invalid choice.");
@@ -109,7 +126,10 @@ public class ConsoleController {
         }
     }
 
-    // Handles creation of a new todo with validation
+    /**
+     * Prompts user for todo details, validates input,
+     * then adds todo via TodoService.
+     */
     private void addTodo() {
         System.out.print("Title: ");
         String title = scanner.nextLine();
@@ -142,7 +162,10 @@ public class ConsoleController {
         System.out.println("Todo added!");
     }
 
-    // Displays all todos for the current user
+    /**
+     * Retrieves all todos of the logged-in user and prints them.
+     * Prints message if no todos found.
+     */
     private void viewTodos() {
         List<Todo> todos = todoService.getAll(userService.getCurrentUser());
         if (todos.isEmpty()) {
@@ -152,7 +175,10 @@ public class ConsoleController {
         }
     }
 
-    // Allows user to mark a todo as complete or incomplete
+    /**
+     * Allows user to mark a todo as completed or incomplete by ID.
+     * Displays success or failure message.
+     */
     private void markComplete() {
         viewTodos();
         System.out.println();
@@ -167,7 +193,10 @@ public class ConsoleController {
         }
     }
 
-    // Deletes a todo by ID
+    /**
+     * Deletes a todo by its ID after showing current todos.
+     * Prints confirmation or error message.
+     */
     private void deleteTodo() {
         viewTodos();
         System.out.print("Enter Todo ID to delete: ");
@@ -179,7 +208,10 @@ public class ConsoleController {
         }
     }
 
-    // Searches todos by keyword in title or description
+    /**
+     * Searches todos by keyword in title or description.
+     * Prints matched todos or message if none found.
+     */
     private void searchTodos() {
         System.out.print("Enter keyword to search: ");
         System.out.println();
@@ -192,7 +224,10 @@ public class ConsoleController {
         }
     }
 
-    // Filters todos based on completion status, priority, or due date range
+    /**
+     * Filters todos based on user choice: completion status, priority, or due date range.
+     * Validates input and displays filtered todos.
+     */
     private void filterTodos() {
         System.out.println("1. By Completion");
         System.out.println("2. By Priority");
@@ -252,20 +287,33 @@ public class ConsoleController {
         }
     }
 
-    // Sorts todos based on selected field
+    /**
+     * Sorts todos by a chosen field such as createdAt, priority, or dueDate.
+     * Prints the sorted list.
+     */
     private void sortTodos() {
         System.out.println("Sort by: createdAt / priority / dueDate");
-        String field = scanner.nextLine();
-        todoService.sortTodos(userService.getCurrentUser(), field).forEach(this::printTodo);
+        String field = scanner.nextLine().trim().toLowerCase();
+
+        List<Todo> sorted = todoService.sortTodos(userService.getCurrentUser(), field);
+        if (sorted == null) {
+            System.out.println("Invalid sort field.");
+        } else {
+            sorted.forEach(this::printTodo);
+        }
     }
 
-    // Utility method to print a single todo in formatted form
+    /**
+     * Helper method to print details of a Todo item in a readable format.
+     * @param todo the Todo object to print
+     */
     private void printTodo(Todo todo) {
-        String due = todo.getDueDateTime().format(Validator.getFormatter());
-        String created = todo.getCreatedAt().format(Validator.getFormatter());
-
-        System.out.printf("ID: %d | %s | %s | Priority: %s | Due: %s | Created: %s | Done: %s%n",
-                todo.getId(), todo.getTitle(), todo.getDescription(),
-                todo.getPriority(), due, created, todo.isCompleted());
+        System.out.println("ID: " + todo.getId());
+        System.out.println("Title: " + todo.getTitle());
+        System.out.println("Description: " + todo.getDescription());
+        System.out.println("Priority: " + todo.getPriority());
+        System.out.println("Due Date: " + todo.getDueDateTime());
+        System.out.println("Completed: " + todo.isCompleted());
+        System.out.println("-----------------------------");
     }
 }
