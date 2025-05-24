@@ -24,7 +24,7 @@ public class TodoServiceTest {
 
     @Before
     public void setUp() {
-        new File(TEST_FILE).delete(); // Clean file
+        new File(TEST_FILE).delete(); // Clean file before each test
         TodoDao todoDao = new TodoDaoImpl(TEST_FILE);
         todoService = new TodoService(todoDao);
         user = new User("john", "pass");
@@ -32,7 +32,7 @@ public class TodoServiceTest {
 
     @After
     public void tearDown() {
-        new File(TEST_FILE).delete(); // Clean up
+        new File(TEST_FILE).delete(); // Clean file after each test
     }
 
     @Test
@@ -70,6 +70,41 @@ public class TodoServiceTest {
         todoService.addTodo(user, "Work", "code", Priority.HIGH, LocalDateTime.now());
         List<Todo> high = todoService.filterByPriority(user, Priority.HIGH);
         assertEquals(1, high.size());
+        assertEquals("Work", high.get(0).getTitle());
+    }
+
+    @Test
+    public void testFilterByCompletion() {
+        todoService.addTodo(user, "Incomplete", "desc", Priority.LOW, LocalDateTime.now());
+        todoService.addTodo(user, "Complete", "desc", Priority.LOW, LocalDateTime.now());
+        todoService.markCompleted(user, 2, true);
+
+        List<Todo> completed = todoService.filterByCompletion(user, true);
+        List<Todo> incomplete = todoService.filterByCompletion(user, false);
+
+        assertEquals(1, completed.size());
+        assertEquals("Complete", completed.get(0).getTitle());
+
+        assertEquals(1, incomplete.size());
+        assertEquals("Incomplete", incomplete.get(0).getTitle());
+    }
+
+    @Test
+    public void testFilterByDueDate() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime today = now.withHour(10);
+        LocalDateTime tomorrow = now.plusDays(1).withHour(10);
+        LocalDateTime nextWeek = now.plusDays(7).withHour(10);
+
+        todoService.addTodo(user, "Today", "desc", Priority.MEDIUM, today);
+        todoService.addTodo(user, "Tomorrow", "desc", Priority.MEDIUM, tomorrow);
+        todoService.addTodo(user, "Next Week", "desc", Priority.MEDIUM, nextWeek);
+
+        List<Todo> filtered = todoService.filterByDueDate(user, now.minusDays(1), now.plusDays(2));
+
+        assertEquals(2, filtered.size());
+        assertTrue(filtered.stream().anyMatch(todo -> todo.getTitle().equals("Today")));
+        assertTrue(filtered.stream().anyMatch(todo -> todo.getTitle().equals("Tomorrow")));
     }
 
     @Test
@@ -78,5 +113,27 @@ public class TodoServiceTest {
         todoService.addTodo(user, "Task 2", "later", Priority.MEDIUM, LocalDateTime.now().plusDays(2));
         List<Todo> sorted = todoService.sortTodos(user, "duedate");
         assertEquals("Task 1", sorted.get(0).getTitle());
+    }
+
+    @Test
+    public void testSortByPriority() {
+        todoService.addTodo(user, "Low Priority", "desc", Priority.LOW, LocalDateTime.now());
+        todoService.addTodo(user, "High Priority", "desc", Priority.HIGH, LocalDateTime.now());
+
+        List<Todo> sorted = todoService.sortTodos(user, "priority");
+
+        assertEquals("Low Priority", sorted.get(0).getTitle());  // Alphabetical by enum order
+    }
+
+    @Test
+    public void testSortByCreatedAt() throws InterruptedException {
+        todoService.addTodo(user, "First", "desc", Priority.MEDIUM, LocalDateTime.now());
+        Thread.sleep(10); // slight delay for a different timestamp
+        todoService.addTodo(user, "Second", "desc", Priority.MEDIUM, LocalDateTime.now());
+
+        List<Todo> sorted = todoService.sortTodos(user, "createdat");
+
+        assertEquals("First", sorted.get(0).getTitle());
+        assertEquals("Second", sorted.get(1).getTitle());
     }
 }
