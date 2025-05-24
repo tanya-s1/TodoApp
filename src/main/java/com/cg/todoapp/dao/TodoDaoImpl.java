@@ -20,8 +20,14 @@ import com.google.gson.reflect.TypeToken;
 
 public class TodoDaoImpl implements TodoDao {
 
-    private static final String FILE_NAME = "user_todos.json";
+    // private static final String FILE_NAME = "user_todos.json";
     private final Gson gson = new Gson();
+
+    private final String FILE_NAME;
+
+    public TodoDaoImpl(String FILE_NAME) {
+        this.FILE_NAME = FILE_NAME;
+    }
 
     // Loads the complete map of user → list of todos
     private Map<String, List<Todo>> loadTodoMap() {
